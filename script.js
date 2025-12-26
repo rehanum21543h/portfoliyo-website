@@ -5,59 +5,77 @@ let stars = [];
 let planets = [];
 let scrollOffset = 0;
 
+/* 🔧 DPR SAFE RESIZE (PC + MOBILE FIX) */
 function resize() {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 resize();
-addEventListener("resize", resize);
+window.addEventListener("resize", resize);
 
-/* ⭐ STARS */
-for (let i = 0; i < 260; i++) {
-  stars.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    r: Math.random() * 1.6 + 0.4,
-    speed: Math.random() * 0.4 + 0.1
-  });
+/* ⭐ STARS (Golden Dots) */
+function createStars() {
+  stars = [];
+  for (let i = 0; i < 260; i++) {
+    stars.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 1.6 + 0.4,
+      speed: Math.random() * 0.4 + 0.1
+    });
+  }
 }
 
-/* 🌍 PLANETS */
-for (let i = 0; i < 5; i++) {
-  planets.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    r: Math.random() * 35 + 25,
-    glow: 0,
-    speed: Math.random() * 0.12 + 0.05
-  });
+/* 🌍 PLANETS (Golden Flash Orbs) */
+function createPlanets() {
+  planets = [];
+  for (let i = 0; i < 5; i++) {
+    planets.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 30 + 25,
+      glowPhase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.12 + 0.05
+    });
+  }
 }
 
+createStars();
+createPlanets();
+
+/* ⭐ DRAW STARS */
 function drawStars() {
   stars.forEach(s => {
     s.y += s.speed;
-    if (s.y > canvas.height) s.y = 0;
+    if (s.y > window.innerHeight) s.y = 0;
 
     ctx.beginPath();
     ctx.arc(s.x, s.y + scrollOffset * 0.15, s.r, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(255,215,130,0.9)";
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "rgba(255,200,100,0.8)";
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "rgba(255,200,120,0.8)";
     ctx.fill();
   });
 }
 
+/* 🌍 DRAW PLANETS */
 function drawPlanets() {
   planets.forEach(p => {
     p.y += p.speed;
-    if (p.y > canvas.height + p.r) {
+    if (p.y > window.innerHeight + p.r) {
       p.y = -p.r;
-      p.x = Math.random() * canvas.width;
+      p.x = Math.random() * window.innerWidth;
     }
 
-    p.glow += 0.03;
-
-    const pulse = Math.sin(p.glow) * 10 + 25;
+    p.glowPhase += 0.03;
+    const pulse = Math.sin(p.glowPhase) * 15 + 35;
 
     ctx.beginPath();
     ctx.arc(
@@ -68,13 +86,14 @@ function drawPlanets() {
       Math.PI * 2
     );
 
-    ctx.fillStyle = "rgba(255,190,80,0.9)";
-    ctx.shadowBlur = pulse;
-    ctx.shadowColor = "rgba(255,200,120,0.9)";
+    ctx.fillStyle = "rgba(255,190,90,0.95)";
+    ctx.shadowBlur = pulse * 1.5; // PC brightness fix
+    ctx.shadowColor = "rgba(255,210,130,1)";
     ctx.fill();
   });
 }
 
+/* 🎥 ANIMATION LOOP */
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -85,7 +104,7 @@ function animate() {
 }
 animate();
 
-/* 📜 Scroll Parallax */
-addEventListener("scroll", () => {
-  scrollOffset = scrollY;
+/* 📜 SCROLL PARALLAX */
+window.addEventListener("scroll", () => {
+  scrollOffset = window.scrollY;
 });
