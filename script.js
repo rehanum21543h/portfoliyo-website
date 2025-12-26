@@ -1,54 +1,46 @@
-const canvas = document.getElementById("energy");
+const canvas = document.getElementById("galaxy");
 const ctx = canvas.getContext("2d");
 
-function resize(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+let stars = [];
+let scrollOffset = 0;
+
+function resize() {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
 }
 resize();
-window.addEventListener("resize", resize);
+addEventListener("resize", resize);
 
-let time = 0;
+// Create stars
+for (let i = 0; i < 260; i++) {
+  stars.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.6 + 0.4,
+    speed: Math.random() * 0.4 + 0.1
+  });
+}
 
-function animate(){
-  time += 0.02;
+function animate() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
+  stars.forEach(s => {
+    s.y += s.speed;
+    if (s.y > canvas.height) s.y = 0;
 
-  // Background glow
-  const bg = ctx.createRadialGradient(cx,cy,100,cx,cy,canvas.width);
-  bg.addColorStop(0,"#1e1b4b");
-  bg.addColorStop(1,"#000");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // Energy rays
-  for(let i=0;i<60;i++){
-    const angle = (Math.PI*2/60)*i + time;
-    const len = 220 + Math.sin(time+i)*90;
     ctx.beginPath();
-    ctx.moveTo(cx,cy);
-    ctx.lineTo(
-      cx + Math.cos(angle)*len,
-      cy + Math.sin(angle)*len
-    );
-    ctx.strokeStyle="rgba(125,211,252,0.18)";
-    ctx.lineWidth=2;
-    ctx.stroke();
-  }
-
-  // Core
-  ctx.beginPath();
-  ctx.arc(cx,cy,38+Math.sin(time)*6,0,Math.PI*2);
-  ctx.fillStyle="#7dd3fc";
-  ctx.shadowBlur=30;
-  ctx.shadowColor="#7dd3fc";
-  ctx.fill();
-  ctx.shadowBlur=0;
+    ctx.arc(s.x, s.y + scrollOffset * 0.15, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,215,130,0.9)";
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "rgba(255,200,100,0.8)";
+    ctx.fill();
+  });
 
   requestAnimationFrame(animate);
 }
-
 animate();
+
+// Scroll parallax
+addEventListener("scroll", () => {
+  scrollOffset = scrollY;
+});
