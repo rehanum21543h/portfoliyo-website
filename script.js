@@ -1,44 +1,54 @@
-/* GALAXY STARS */
-const canvas=document.getElementById("galaxy");
-const c=canvas.getContext("2d");
-let w,h;
-function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;}
-resize();window.onresize=resize;
+const canvas = document.getElementById("energy");
+const ctx = canvas.getContext("2d");
 
-const stars=[...Array(180)].map(()=>({
-  x:Math.random()*w,
-  y:Math.random()*h,
-  r:Math.random()*1.5+0.5,
-  dx:(Math.random()-.5)*0.3,
-  dy:(Math.random()-.5)*0.3
-}));
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+let time = 0;
 
 function animate(){
-  c.clearRect(0,0,w,h);
-  let g=c.createRadialGradient(w/2,h/2,100,w/2,h/2,w);
-  g.addColorStop(0,"#1e1b4b");
-  g.addColorStop(1,"#020617");
-  c.fillStyle=g;
-  c.fillRect(0,0,w,h);
+  time += 0.02;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  stars.forEach(s=>{
-    s.x+=s.dx; s.y+=s.dy;
-    if(s.x<0||s.x>w) s.dx*=-1;
-    if(s.y<0||s.y>h) s.dy*=-1;
-    c.beginPath();
-    c.arc(s.x,s.y,s.r,0,Math.PI*2);
-    c.fillStyle="rgba(255,255,255,0.8)";
-    c.fill();
-  });
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+
+  // Background glow
+  const bg = ctx.createRadialGradient(cx,cy,100,cx,cy,canvas.width);
+  bg.addColorStop(0,"#1e1b4b");
+  bg.addColorStop(1,"#000");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Energy rays
+  for(let i=0;i<60;i++){
+    const angle = (Math.PI*2/60)*i + time;
+    const len = 220 + Math.sin(time+i)*90;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(
+      cx + Math.cos(angle)*len,
+      cy + Math.sin(angle)*len
+    );
+    ctx.strokeStyle="rgba(125,211,252,0.18)";
+    ctx.lineWidth=2;
+    ctx.stroke();
+  }
+
+  // Core
+  ctx.beginPath();
+  ctx.arc(cx,cy,38+Math.sin(time)*6,0,Math.PI*2);
+  ctx.fillStyle="#7dd3fc";
+  ctx.shadowBlur=30;
+  ctx.shadowColor="#7dd3fc";
+  ctx.fill();
+  ctx.shadowBlur=0;
+
   requestAnimationFrame(animate);
 }
-animate();
 
-/* PARALLAX */
-document.addEventListener("mousemove",e=>{
-  document.querySelectorAll(".parallax").forEach(el=>{
-    const x=(e.clientX-innerWidth/2)/40;
-    const y=(e.clientY-innerHeight/2)/40;
-    el.style.transform=translate(${x}px,${y}px);
-  });
-});
+animate();
